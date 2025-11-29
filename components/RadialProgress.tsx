@@ -40,7 +40,7 @@ export const RadialProgress: React.FC<RadialProgressProps> = ({ value, max, labe
       </ResponsiveContainer>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-[10%] text-center">
         <div className={`text-4xl font-bold ${color.replace('fill-', 'text-')}`}>
-          {value.toFixed(2)}
+          {value.toFixed(3)}
         </div>
         <div className="text-xs text-slate-400 uppercase tracking-widest mt-1">
           {label}

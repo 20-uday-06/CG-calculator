@@ -224,7 +224,7 @@ function App() {
                 <div className="relative">
                     <input
                     type="number"
-                    step="0.01"
+                    step="0.001"
                     min="0"
                     max="10"
                     value={history.currentCgpa}
@@ -268,10 +268,10 @@ function App() {
                         <label className="block text-xs text-slate-500 mb-1.5 ml-1">Target CGPA</label>
                         <input
                             type="number"
-                            step="0.01"
+                            step="0.001"
                             min="0"
                             max="10"
-                            placeholder="9.0"
+                            placeholder="9.000"
                             value={desiredCgpa}
                             onChange={(e) => setDesiredCgpa(e.target.value)}
                             className="w-full bg-slate-900 text-white p-3 rounded-lg border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all font-mono"
@@ -296,7 +296,7 @@ function App() {
                              Required SGPA (Next Sem) <ArrowRight size={10} />
                         </div>
                         <div className={`text-2xl font-bold font-mono ${requiredNextSemSgpa > 10 ? 'text-rose-400' : requiredNextSemSgpa <= 0 ? 'text-emerald-400' : 'text-indigo-400'}`}>
-                            {requiredNextSemSgpa > 10 ? 'Impossible' : requiredNextSemSgpa <= 0 ? 'Secured!' : requiredNextSemSgpa.toFixed(2)}
+                            {requiredNextSemSgpa > 10 ? 'Impossible' : requiredNextSemSgpa <= 0 ? 'Secured!' : requiredNextSemSgpa.toFixed(3)}
                         </div>
                         {requiredNextSemSgpa > 10 && <div className="text-[10px] text-rose-400 mt-1">Target exceeds maximum possible GPA (10.0)</div>}
                         {requiredNextSemSgpa > 0 && requiredNextSemSgpa <= 10 && <div className="text-[10px] text-slate-500 mt-1">Based on next semester credits ({nextSemCredits})</div>}
