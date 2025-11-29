@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Plus, GraduationCap, Calculator, RefreshCcw, Save } from 'lucide-react';
-import { v4 as uuidv4 } from 'uuid'; // Actually, lets just use a simple counter or random string for ID since no external lib needed strictly if not requested, but I'll use simple random generator.
+import { Plus, GraduationCap, Calculator, RefreshCcw, Save, Target, ArrowRight } from 'lucide-react';
 
 import { Course, SimulationState } from './types';
 import { INITIAL_COURSES, INITIAL_HISTORY } from './constants';
@@ -14,6 +13,8 @@ function App() {
   // State
   const [courses, setCourses] = useState<Course[]>(INITIAL_COURSES);
   const [history, setHistory] = useState<SimulationState>(INITIAL_HISTORY);
+  const [desiredCgpa, setDesiredCgpa] = useState<string>('');
+  const [nextSemCredits, setNextSemCredits] = useState<string>('19');
 
   // Derived Calculations
   const semesterStats = useMemo(() => {
@@ -35,6 +36,29 @@ function App() {
 
     return { totalCredits: totalCombinedCredits, cgpa };
   }, [history, semesterStats]);
+
+  // Target Calculator Logic (Next Semester)
+  const requiredNextSemSgpa = useMemo(() => {
+    if (!desiredCgpa || !nextSemCredits) return null;
+    const target = parseFloat(desiredCgpa);
+    const creditsNext = parseFloat(nextSemCredits);
+
+    if (isNaN(target) || isNaN(creditsNext) || creditsNext === 0) return null;
+
+    // Current status (History + Current Sem)
+    const currentTotalPoints = overallStats.cgpa * overallStats.totalCredits;
+    const totalCreditsSoFar = overallStats.totalCredits;
+
+    // Future status
+    const futureTotalCredits = totalCreditsSoFar + creditsNext;
+    const targetTotalPoints = target * futureTotalCredits;
+
+    // Calculation
+    const pointsNeededNextSem = targetTotalPoints - currentTotalPoints;
+    const reqSgpa = pointsNeededNextSem / creditsNext;
+    
+    return reqSgpa;
+  }, [desiredCgpa, nextSemCredits, overallStats]);
 
   // Handlers
   const handleUpdateCourse = (id: string, field: keyof Course, value: any) => {
@@ -68,6 +92,8 @@ function App() {
     if(window.confirm("Reset all data to defaults?")) {
         setCourses(INITIAL_COURSES);
         setHistory(INITIAL_HISTORY);
+        setDesiredCgpa('');
+        setNextSemCredits('19');
     }
   };
 
@@ -84,10 +110,10 @@ function App() {
           <p className="text-slate-400 mt-1 text-sm">Interactive Academic Performance Calculator</p>
         </div>
         
-        <div className="flex gap-3">
+        <div className="flex gap-3 w-full md:w-auto">
             <button 
                 onClick={handleReset}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-surface hover:bg-slate-700 rounded-lg transition-all border border-slate-700"
+                className="flex flex-1 md:flex-none justify-center items-center gap-2 px-4 py-2 text-sm font-medium text-slate-400 hover:text-white bg-surface hover:bg-slate-700 rounded-lg transition-all border border-slate-700"
             >
                 <RefreshCcw size={16} />
                 Reset Defaults
@@ -223,12 +249,67 @@ function App() {
                 </div>
               </div>
             </div>
+          </div>
 
-            <div className="mt-6 p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-                <p className="text-[10px] text-indigo-300 leading-relaxed">
-                    <strong>Formula Used:</strong> <br/>
-                    (Previous CGPA × Previous Credits + Current SGPA × Current Credits) / Total Credits
-                </p>
+          {/* Target Calculator (Future) */}
+          <div className="bg-surface/30 backdrop-blur border border-slate-700 rounded-2xl p-6 relative overflow-hidden group hover:border-indigo-500/30 transition-colors">
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity pointer-events-none">
+                <Target size={48} />
+            </div>
+            
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Target size={14} />
+                Future Goal Planner
+            </h3>
+
+            <div className="space-y-4 relative z-10">
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-xs text-slate-500 mb-1.5 ml-1">Target CGPA</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            max="10"
+                            placeholder="9.0"
+                            value={desiredCgpa}
+                            onChange={(e) => setDesiredCgpa(e.target.value)}
+                            className="w-full bg-slate-900 text-white p-3 rounded-lg border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all font-mono"
+                        />
+                    </div>
+                     <div>
+                        <label className="block text-xs text-slate-500 mb-1.5 ml-1">Next Sem Credits</label>
+                        <input
+                            type="number"
+                            step="0.5"
+                            min="1"
+                            value={nextSemCredits}
+                            onChange={(e) => setNextSemCredits(e.target.value)}
+                            className="w-full bg-slate-900 text-white p-3 rounded-lg border border-slate-700 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 outline-none transition-all font-mono"
+                        />
+                    </div>
+                </div>
+
+                {requiredNextSemSgpa !== null && (
+                    <div className={`p-4 rounded-xl border ${requiredNextSemSgpa > 10 ? 'bg-rose-500/10 border-rose-500/20' : requiredNextSemSgpa <= 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-indigo-500/10 border-indigo-500/20'}`}>
+                        <div className="text-xs text-slate-400 mb-1 flex items-center gap-1">
+                             Required SGPA (Next Sem) <ArrowRight size={10} />
+                        </div>
+                        <div className={`text-2xl font-bold font-mono ${requiredNextSemSgpa > 10 ? 'text-rose-400' : requiredNextSemSgpa <= 0 ? 'text-emerald-400' : 'text-indigo-400'}`}>
+                            {requiredNextSemSgpa > 10 ? 'Impossible' : requiredNextSemSgpa <= 0 ? 'Secured!' : requiredNextSemSgpa.toFixed(2)}
+                        </div>
+                        {requiredNextSemSgpa > 10 && <div className="text-[10px] text-rose-400 mt-1">Target exceeds maximum possible GPA (10.0)</div>}
+                        {requiredNextSemSgpa > 0 && requiredNextSemSgpa <= 10 && <div className="text-[10px] text-slate-500 mt-1">Based on next semester credits ({nextSemCredits})</div>}
+                    </div>
+                )}
+                
+                {(!desiredCgpa) && (
+                     <div className="p-3 bg-indigo-500/5 border border-indigo-500/10 rounded-lg">
+                        <p className="text-[10px] text-indigo-300 leading-relaxed">
+                            Set a target CGPA to see what SGPA you need in the <strong>next semester</strong> to achieve it.
+                        </p>
+                    </div>
+                )}
             </div>
           </div>
 
