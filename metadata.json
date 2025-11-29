@@ -1,0 +1,5 @@
+{
+  "name": "GradePulse - Smart GPA Calculator",
+  "description": "A modern, aesthetic SGPA and CGPA calculator tailored for engineering students. Features real-time calculation, interactive visualizations, and fully editable course data.",
+  "requestFramePermissions": []
+}
